@@ -1,0 +1,16 @@
+# macOS / Linux
+.DS_Store
+*.log
+
+# 环境/密钥 —— 永远不要提交真实密钥或中转地址
+.env
+.env.*
+!*.example
+*.key
+*.pem
+secrets/
+
+# 编辑器/系统
+.vscode/
+.idea/
+Thumbs.db

@@ -1,0 +1,21 @@
+{
+  "env": {
+    "ANTHROPIC_DEFAULT_FABLE_MODEL": "claude-fable-5[1M]",
+    "ANTHROPIC_DEFAULT_FABLE_MODEL_NAME": "claude-fable-5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-opus-5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME": "claude-opus-5",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-5[1M]",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL_NAME": "claude-opus-5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-opus-5[1M]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "claude-opus-5",
+    "ANTHROPIC_MODEL": "claude-opus-5[1M]",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-opus-5[1M]",
+    "ENABLE_TOOL_SEARCH": "true",
+    "HTTPS_PROXY": "http://127.0.0.1:10808",
+    "HTTP_PROXY": "http://127.0.0.1:10808"
+  },
+  "includeCoAuthoredBy": false,
+  "model": "opus",
+  "skipWebFetchPreflight": true,
+  "skipDangerousModePermissionPrompt": true
+}

@@ -1,0 +1,24 @@
+# Codex 配置（脱敏版）
+# 中转地址已替换为占位符，请在安装时填写真实地址；auth 由 `codex login` 或 auth.json 管理，不入库。
+
+model_provider = "custom"
+model = "deepseek-v4-flash-0731"
+model_catalog_json = "cc-switch-model-catalog.json"
+
+[features]
+goals = true
+
+[model_providers.custom]
+name = "custom"
+wire_api = "responses"
+requires_openai_auth = true
+# TODO: 安装时替换为你的中转地址，例如 https://your-relay/v1
+base_url = "https://YOUR-RELAY-PLACEHOLDER/v1"
+
+# 项目级 trust_level 在新机器上通过 `codex` 交互式确认，不入库（旧机器上的绝对路径不通用）。
+# [projects.'/path/to/project']
+# trust_level = "trusted"
+
+[windows]
+# 仅 Windows 生效；macOS 会忽略该段。
+sandbox = "elevated"
