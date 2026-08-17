@@ -7,7 +7,7 @@
 
 - **绝不把真实密钥/中转地址写进仓库**：本仓库只含脱敏配置。密钥用环境变量或交互式询问补齐，写入的是目标机器上的配置（`~/.claude/settings.json`、`~/.codex/config.toml`），不是仓库文件。
 - **目标是本机用户目录**，不是仓库目录。路径映射见下表。
-- 目标文件已存在时**先备份**（`<目标>.bak.<时间戳>`）再覆盖，可重复执行（幂等）。
+- 目标文件已存在且内容相同则跳过；配置源在本仓库（git），覆盖前**不做备份**。
 - 不要复制本仓库的 `.git`、文档、脚本自身；只复制各 `*/` 目录下的配置文件。
 
 ## 1. 路径映射
@@ -39,7 +39,7 @@
 
 ### B. Claude Code
 
-1. 复制 `claude-code/settings.json` 到 `~/.claude/settings.json`（先备份旧文件）。
+1. 复制 `claude-code/settings.json` 到 `~/.claude/settings.json`。
 2. 密钥补齐（二选一，**不要写进仓库**）：
    - 若环境变量 `ANTHROPIC_AUTH_TOKEN` / `ANTHROPIC_BASE_URL` 已设置：把值合并进 `~/.claude/settings.json` 的 `env` 段；
    - 否则**向用户交互式询问**这两项（允许留空），再写入 `env` 段。
@@ -48,7 +48,7 @@
 
 ### C. Codex
 
-1. 复制 `codex/config.toml` 到 `~/.codex/config.toml`（先备份）。
+1. 复制 `codex/config.toml` 到 `~/.codex/config.toml`。
 2. 复制 `codex/model-catalog.json` 到 `~/.codex/cc-switch-model-catalog.json`。
 3. 复制 `codex/rules/default.rules` 到 `~/.codex/rules/default.rules`（可选：这是 xtrader 项目专属规则，可跳过并在提示中说明）。
 4. 中转地址补齐：把 `~/.codex/config.toml` 中的占位符 `https://YOUR-RELAY-PLACEHOLDER/v1` 替换为真实中转地址——

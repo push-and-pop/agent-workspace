@@ -3,7 +3,7 @@
 #
 # 作用：把本仓库的 pi / Claude Code / Codex 配置复制到本机对应目录，
 #       安装 pi 的 packages，并交互式补齐"不收录在仓库里的密钥/中转地址"。
-# 幂等：已存在的目标文件先备份到 <目标>.bak.<时间戳>，可重复执行。
+# 幂等：目标文件内容相同则跳过；配置源在本仓库（git），覆盖前不做 .bak 备份。
 #
 # 用法：
 #   powershell -ExecutionPolicy Bypass -File .\install.ps1          # 全量安装
@@ -36,8 +36,6 @@ function Install-File([string]$Src, [string]$Dst) {
   if (Test-Path $Dst) {
     $same = (Get-FileHash $Src -Algorithm SHA256).Hash -eq (Get-FileHash $Dst -Algorithm SHA256).Hash
     if ($same) { Write-Host "  · 已是最新: $Dst"; return }
-    $bak = "$Dst.bak.$(Get-Date -Format 'yyyyMMddHHmmss')"
-    Copy-Item $Dst $bak; Write-Host "  · 备份旧配置 -> $bak"
   }
   $dir = Split-Path -Parent $Dst
   New-Item -ItemType Directory -Force -Path $dir | Out-Null

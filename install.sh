@@ -4,7 +4,7 @@
 #
 # 作用：把本仓库的 pi / Claude Code / Codex 配置复制到本机对应目录，
 #       安装 pi 的 packages，并交互式补齐"不收录在仓库里的密钥/中转地址"。
-# 幂等：已存在的目标文件先备份到 <目标>.bak.<时间戳>，可重复执行。
+# 幂等：目标文件内容相同则跳过；配置源在本仓库（git），覆盖前不做 .bak 备份。
 #
 # 用法：
 #   bash install.sh                 # 全量安装（含交互式密钥询问）
@@ -34,17 +34,13 @@ done
 # ---- 工具函数 ----
 has() { command -v "$1" >/dev/null 2>&1; }
 
-# 备份并复制单个文件（文件已存在且内容相同则跳过）
+# 复制单个文件（文件已存在且内容相同则跳过；覆盖前不做备份，源在 git）
 install_file() { # src dst
   local src="$1" dst="$2"
   if [ -f "$src" ]; then
     if [ -f "$dst" ] && cmp -s "$src" "$dst"; then
       echo "  · 已是最新: $dst"
     else
-      if [ -f "$dst" ]; then
-        local bak="${dst}.bak.$(date +%Y%m%d%H%M%S)"
-        cp "$dst" "$bak" && echo "  · 备份旧配置 -> $bak"
-      fi
       mkdir -p "$(dirname "$dst")"
       cp "$src" "$dst"
       echo "  · 写入: $dst"
@@ -158,7 +154,8 @@ if $DO_CODEX; then
       read -r -p "    输入 Codex 中转地址（如 https://your-relay/v1，留空跳过）: " RELAY
     fi
     if [ -n "$RELAY" ]; then
-      sed -i.bak "s|https://YOUR-RELAY-PLACEHOLDER/v1|$RELAY|g" "$CODEX_DIR/config.toml"
+      local cfg="$CODEX_DIR/config.toml" tmp="$CODEX_DIR/config.toml.tmp.$$"
+      sed "s|https://YOUR-RELAY-PLACEHOLDER/v1|$RELAY|g" "$cfg" > "$tmp" && mv "$tmp" "$cfg"
       echo "  · 已替换 config.toml 中转占位符（不会出现在仓库里）"
     fi
   else
