@@ -68,7 +68,7 @@ if ($DoPi) {
   if (Get-Command pi -ErrorAction SilentlyContinue) {
     Write-Host "  · 安装 pi packages:"
     if (Get-Command node -ErrorAction SilentlyContinue) {
-      $pkgs = node -e "const s=require(process.argv[1]); (s.packages||[]).forEach(p=>console.log(p))" (Join-Path $RepoDir "pi\settings.json")
+      $pkgs = node -e "const s=require(process.argv[1]); (s.packages||[]).forEach(p=>{ if (typeof p === 'string') console.log(p); else if (p && typeof p.source === 'string') console.log(p.source); })" (Join-Path $RepoDir "pi\settings.json")
       foreach ($pkg in $pkgs) {
         if (-not $pkg) { continue }
         Write-Host "    -> pi install $pkg"

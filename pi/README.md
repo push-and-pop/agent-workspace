@@ -4,7 +4,7 @@ pi 的自定义 agent 工作流配置。安装方式见仓库根 `README.md` / `
 
 | 文件 | 说明 |
 |---|---|
-| `settings.json` | 主题 `dark`、packages 列表（rpiv-* 系列 + subagents + cc-switch fork）、默认 provider/model |
+| `settings.json` | 主题 `volcanic-bubblegum`（来自 awesome-pi-themes）、packages 列表（rpiv-* 系列 + subagents + zentui + awesome-pi-themes + cc-switch fork）、默认 provider/model |
 | `cc-switch-provider.json` | 中转 provider 的 `routingMode`（fixed/live）与 `hideRoutingStatus` |
 | `agents/` | 自定义 agent（rpiv 那批：codebase-*、artifact-* 等）。**快照**，由 `@juicesharp/rpiv-pi` 包自动生成并写入 `~/.pi/agent/agents/`（含 `.rpiv-managed.json` 哈希校验），装包后自动同步 |
 

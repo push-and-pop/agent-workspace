@@ -86,7 +86,7 @@ if $DO_PI; then
         [ -n "$pkg" ] || continue
         echo "    → pi install $pkg"
         pi install "$pkg" || echo "    ⚠ 安装失败（可稍后手动重试）: $pkg"
-      done < <(node -e 'const s=require(process.argv[1]); (s.packages||[]).forEach(p=>console.log(p))' "$REPO_DIR/pi/settings.json")
+      done < <(node -e 'const s=require(process.argv[1]); (s.packages||[]).forEach(p=>{ if (typeof p === "string") console.log(p); else if (p && typeof p.source === "string") console.log(p.source); })' "$REPO_DIR/pi/settings.json")
     else
       echo "    ⚠ 未检测到 node，无法自动安装 packages。请手动执行 pi/settings.json 里的安装列表。"
     fi
