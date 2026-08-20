@@ -17,6 +17,9 @@
 | pi | `pi/settings.json` | `~/.pi/agent/settings.json` | `%USERPROFILE%\.pi\agent\settings.json` |
 | pi | `pi/cc-switch-provider.json` | `~/.pi/agent/cc-switch-provider.json` | `%USERPROFILE%\.pi\agent\cc-switch-provider.json` |
 | pi | `pi/agents/*` | `~/.pi/agent/agents/` | `%USERPROFILE%\.pi\agent\agents\` |
+| pi | `pi/pi-spoof-headers/` | `~/.pi/agent/pi/pi-spoof-headers/` | `%USERPROFILE%\.pi\agent\pi\pi-spoof-headers\` |
+| pi | `pi/pi-cc-switch-provider/` | `~/.pi/agent/pi/pi-cc-switch-provider/` | `%USERPROFILE%\.pi\agent\pi\pi-cc-switch-provider\` |
+| pi | `pi/pi-auto-proxy/` | `~/.pi/agent/pi/pi-auto-proxy/` | `%USERPROFILE%\.pi\agent\pi\pi-auto-proxy\` |
 | Claude Code | `claude-code/settings.json` | `~/.claude/settings.json` | `%USERPROFILE%\.claude\settings.json` |
 | Codex | `codex/config.toml` | `~/.codex/config.toml` | `%USERPROFILE%\.codex\config.toml` |
 | Codex | `codex/model-catalog.json` | `~/.codex/cc-switch-model-catalog.json` | `%USERPROFILE%\.codex\cc-switch-model-catalog.json` |
@@ -32,10 +35,12 @@
 2. 复制 `pi/settings.json`、`pi/cc-switch-provider.json` 到目标（见映射表）。
 3. 复制 `pi/agents/*.md` 与 `pi/agents/.rpiv-managed.json` 到 `~/.pi/agent/agents/`。
    - 注：这些 agent 由 `@juicesharp/rpiv-pi` 包自动生成，装包后若不一致会以包为准，属正常。
-4. 读取 `pi/settings.json` 的 `packages` 数组，对每一项执行 `pi install <package>`。
-   - 例如：`pi install npm:@juicesharp/rpiv-pi`、`pi install git:github.com/push-and-pop/pi-cc-switch-provider` 等。
+4. 复制 `pi/pi-spoof-headers/`、`pi/pi-cc-switch-provider/`、`pi/pi-auto-proxy/` 到 `~/.pi/agent/pi/`（**排除 `node_modules/`**；这是本地包源，settings.json 的 packages 以 `./pi/xxx` 相对路径引用）。
+5. 读取 `pi/settings.json` 的 `packages` 数组，对每一项执行 `pi install <package>`。
+   - npm/git 源直接装（如 `pi install npm:@juicesharp/rpiv-pi`）；`./pi/...` 本地路径源只校验存在性，不复制不装依赖。
+   - 对每个本地插件目录在 `~/.pi/agent/pi/<name>/` 下执行 `npm install` 补齐依赖（如 `undici`）。
    - 某包安装失败时提示用户，不中断其余包。
-5. 平台提示：当前若是 macOS/Linux，且默认 provider 是 `cc-switch-codex`（依赖 Windows 的 cc-switch GUI），告知用户需另行配置或修改 `defaultProvider`。
+6. 平台提示：当前若是 macOS/Linux，且默认 provider 是 `cc-switch-codex`（依赖 Windows 的 cc-switch GUI），告知用户需另行配置或修改 `defaultProvider`。
 
 ### B. Claude Code
 

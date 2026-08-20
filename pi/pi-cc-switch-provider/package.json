@@ -1,0 +1,31 @@
+{
+  "name": "pi-cc-switch-provider",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pi provider extension that imports active Codex and Claude settings from cc-switch.",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "cc-switch",
+    "codex",
+    "claude"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions/cc-switch-provider.ts"
+    ]
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "check": "node --experimental-strip-types --check lib/cc-switch-config-paths.ts && node --experimental-strip-types --check lib/claude-model-selection.ts && node --experimental-strip-types --check lib/codex-model-catalog.ts && node --experimental-strip-types --check lib/provider-local-config.ts && node --experimental-strip-types --check lib/selective-proxy.ts && node --experimental-strip-types --check extensions/cc-switch-provider.ts"
+  },
+  "dependencies": {
+    "undici": "^7.19.1"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  }
+}

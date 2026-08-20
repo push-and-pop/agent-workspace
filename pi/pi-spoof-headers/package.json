@@ -1,0 +1,12 @@
+{
+	"name": "pi-spoof-headers",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "Pi extension that spoofs Codex CLI / Claude Code request headers so transits treat pi as those agents",
+	"keywords": ["pi-package", "pi-extension", "headers", "spoof", "codex", "claude-code"],
+	"license": "MIT",
+	"pi": {
+		"extensions": ["./extensions/spoof-headers.ts"]
+	}
+}

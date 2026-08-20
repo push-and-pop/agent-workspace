@@ -1,0 +1,27 @@
+{
+	"name": "pi-auto-proxy",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "Pi extension: auto-detect a local HTTP proxy (Windows system proxy + port probing) and route all pi traffic through it while pi is running.",
+	"keywords": [
+		"pi-package",
+		"pi-extension",
+		"proxy"
+	],
+	"pi": {
+		"extensions": [
+			"./extensions/auto-proxy.ts"
+		]
+	},
+	"scripts": {
+		"test": "node --experimental-strip-types --test tests/*.test.mjs",
+		"check": "node --experimental-strip-types --check lib/proxy-detect.ts && node --experimental-strip-types --check lib/proxy-runtime.ts && node --experimental-strip-types --check lib/proxy-verify.ts && node --experimental-strip-types --check extensions/auto-proxy.ts"
+	},
+	"dependencies": {
+		"undici": "^7.19.1"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-coding-agent": "*"
+	}
+}

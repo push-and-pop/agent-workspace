@@ -14,3 +14,6 @@ secrets/
 .vscode/
 .idea/
 Thumbs.db
+
+# pi 运行状态（remote-pi 等）
+.pi/
