@@ -19,7 +19,7 @@ Pi 扩展：让 pi 发出的 provider HTTP 请求带上 **Codex CLI**（OpenAI �
 
 **Codex CLI（Rust, 0.147.0）**：真实 codex-cli 只发 `user-agent: codex-cli/<version>` + `authorization`，没有 `x-stainless-*`。默认只覆盖 `user-agent`，并删除 pi codex-responses 传输自带的 `originator: pi`（真实 codex 不发）。可选 `PI_SPOOF_CODEX_STAINLESS=1` 把 openai-node SDK 注入的 `x-stainless-*` 覆盖成 rust 风格（注：SDK 在我们 hook 之后才注入这些头，无法彻底删除，只能覆盖）。
 
-**Claude Code**：按真实 claude-cli 捕获（见 `pi-cc-switch-debug-request.json`）设置 `user-agent: claude-cli/2.1.123 (external, cli)`、`x-app: cli`、`x-claude-code-session-id`（取当前 pi session id）、`anthropic-version`、`anthropic-dangerous-direct-browser-access`、`x-stainless-*`（js/node 栈）。`anthropic-beta` 默认保留 pi 自己的列表（避免破坏推理模式），可用 `PI_SPOOF_CLAUDE_BETAS` 覆盖。
+**Claude Code**：按真实 claude-cli 捕获（见 `pi-cc-switch-debug-request.json`）设置 `user-agent: claude-cli/2.1.185 (external, cli)`、`x-app: cli`、`x-claude-code-session-id`（取当前 pi session id）、`anthropic-version`、`anthropic-dangerous-direct-browser-access`、`x-stainless-*`（js/node 栈）。`anthropic-beta` 默认对齐 `~/.omp/agent/models.yml` 的完整 Claude Code beta 集（含 `context-1m-2025-08-07` 这个 1M 上下文开关），可用 `PI_SPOOF_CLAUDE_BETAS` 整体覆盖。
 
 ## 安装
 
@@ -38,9 +38,9 @@ cp extensions/spoof-headers.ts ~/.pi/agent/extensions/spoof-headers.ts
 | `PI_SPOOF_HEADERS` | 开启 | `0`/`off`/`false` 关闭 |
 | `PI_SPOOF_CODEX_USER_AGENT` | `codex-cli/0.147.0` | codex 伪装 UA |
 | `PI_SPOOF_CODEX_STAINLESS` | `0` | `1` 时覆盖为 rust 风格 stainless 头 |
-| `PI_SPOOF_CLAUDE_USER_AGENT` | `claude-cli/2.1.123 (external, cli)` | claude 伪装 UA |
+| `PI_SPOOF_CLAUDE_USER_AGENT` | `claude-cli/2.1.185 (external, cli)` | claude 伪装 UA |
 | `PI_SPOOF_CLAUDE_X_APP` | `cli` | claude `x-app` 值 |
-| `PI_SPOOF_CLAUDE_BETAS` | （保留 pi 的） | 逗号分隔，覆盖 `anthropic-beta` |
+| `PI_SPOOF_CLAUDE_BETAS` | （models.yml 完整 beta 集） | 逗号分隔，整体覆盖 `anthropic-beta` |
 
 会话内可用 `/spoof-headers` 命令查看当前配置与模型路由。
 

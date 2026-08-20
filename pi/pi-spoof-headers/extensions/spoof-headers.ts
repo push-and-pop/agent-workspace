@@ -30,10 +30,11 @@ import type { ExtensionAPI, ExtensionContext, BeforeProviderHeadersEvent } from 
  *   PI_SPOOF_HEADERS=0|off|false         master switch, default enabled
  *   PI_SPOOF_CODEX_USER_AGENT            default "codex-cli/0.147.0"
  *   PI_SPOOF_CODEX_STAINLESS=1|0         mimic rust SDK x-stainless-* (default 0)
- *   PI_SPOOF_CLAUDE_USER_AGENT           default "claude-cli/2.1.123 (external, cli)"
+ *   PI_SPOOF_CLAUDE_USER_AGENT           default "claude-cli/2.1.185 (external, cli)"
  *   PI_SPOOF_CLAUDE_X_APP                default "cli"
  *   PI_SPOOF_CLAUDE_BETAS                comma list to (re)write anthropic-beta,
- *                                        default keeps pi's own beta list
+ *                                        default mirrors ohmypi models.yml's Claude Code
+ *                                        beta set (incl. context-1m-2025-08-07)
  */
 
 type ProviderHeaders = Record<string, string | null>;
@@ -51,8 +52,22 @@ const CLAUDE_APIS = new Set([
 ]);
 
 const DEFAULT_CODEX_USER_AGENT = "codex-cli/0.147.0";
-const DEFAULT_CLAUDE_USER_AGENT = "claude-cli/2.1.123 (external, cli)";
+const DEFAULT_CLAUDE_USER_AGENT = "claude-cli/2.1.185 (external, cli)";
 const DEFAULT_CLAUDE_X_APP = "cli";
+// Beta 集对齐 ~/.omp/agent/models.yml anyrouter-claude 的 anthropic-beta 头，
+// 其中 context-1m-2025-08-07 是 1M 上下文变体（[1m] 后缀模型）能否过网关的开关。
+const DEFAULT_CLAUDE_BETAS = [
+	"claude-code-20250219",
+	"context-1m-2025-08-07",
+	"interleaved-thinking-2025-05-14",
+	"redact-thinking-2026-02-12",
+	"thinking-token-count-2026-05-13",
+	"context-management-2025-06-27",
+	"prompt-caching-scope-2026-01-05",
+	"mid-conversation-system-2026-04-07",
+	"advanced-tool-use-2025-11-20",
+	"effort-2025-11-24",
+];
 
 function envValue(name: string): string | undefined {
 	const value = process.env[name]?.trim();
@@ -72,7 +87,7 @@ function readConfig() {
 		codexStainless: envFlag("PI_SPOOF_CODEX_STAINLESS", false),
 		claudeUserAgent: envValue("PI_SPOOF_CLAUDE_USER_AGENT") ?? DEFAULT_CLAUDE_USER_AGENT,
 		claudeXApp: envValue("PI_SPOOF_CLAUDE_X_APP") ?? DEFAULT_CLAUDE_X_APP,
-		claudeBetas: envValue("PI_SPOOF_CLAUDE_BETAS"),
+		claudeBetas: envValue("PI_SPOOF_CLAUDE_BETAS") ?? DEFAULT_CLAUDE_BETAS.join(","),
 	};
 }
 
@@ -101,8 +116,8 @@ function applyCodexHeaders(headers: ProviderHeaders, cfg: SpoofConfig): void {
 
 // Header set observed from a real Claude Code / pi OAuth capture
 // (pi-cc-switch-debug-request.json): claude-cli UA, x-app, session id,
-// anthropic-version, stainless js headers. Keeps pi's own anthropic-beta
-// unless PI_SPOOF_CLAUDE_BETAS is set.
+// anthropic-version, stainless js headers. anthropic-beta defaults to the
+// full ohmypi models.yml beta list unless PI_SPOOF_CLAUDE_BETAS overrides it.
 function applyClaudeHeaders(headers: ProviderHeaders, cfg: SpoofConfig, sessionId: string): void {
 	headers["user-agent"] = cfg.claudeUserAgent;
 	headers["x-app"] = cfg.claudeXApp;
@@ -118,9 +133,9 @@ function applyClaudeHeaders(headers: ProviderHeaders, cfg: SpoofConfig, sessionI
 	headers["x-stainless-package-version"] = "0.81.0";
 	headers["x-stainless-retry-count"] = "0";
 	headers["x-stainless-timeout"] = "600";
-	if (cfg.claudeBetas) {
-		headers["anthropic-beta"] = cfg.claudeBetas.split(",").map((b) => b.trim()).filter(Boolean).join(",");
-	}
+	// anthropic-beta 默认对齐 ohmypi models.yml 的完整 Claude Code beta 集，
+	// PI_SPOOF_CLAUDE_BETAS 可整体覆盖。
+	headers["anthropic-beta"] = cfg.claudeBetas.split(",").map((b) => b.trim()).filter(Boolean).join(",");
 }
 
 function platformOs(): string {
