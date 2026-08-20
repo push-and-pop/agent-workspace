@@ -40,6 +40,11 @@ import {
 } from "../lib/provider-local-config.ts";
 
 import {
+	formatCcSwitchProviderName,
+	readCurrentCcSwitchProviderNames,
+} from "../lib/cc-switch-provider-names.ts";
+
+import {
 	ANYROUTER_PROXY_ENV,
 	isAnyrouterHttpsUrl,
 	isSelectiveProxyHttpsUrl,
@@ -1306,6 +1311,7 @@ function installCcSwitchFooter(
 	ctx: ExtensionContext,
 	routingMode: CcSwitchRoutingMode,
 	codexSnapshot: CodexConfig | undefined,
+	providerNames: { claude?: string; codex?: string },
 ): void {
 	if (!ctx.hasUI) return;
 	const configPath = ccSwitchCliPaths().codexConfigPath;
@@ -1405,6 +1411,18 @@ function installCcSwitchFooter(
 					if (statsLeftWidth + minPadding + visibleWidth(rightSide) > width) {
 						rightSide = rightSideWithoutProvider;
 					}
+				}
+				// 当前 cc-switch 供应商名称（providers.name，如 "anyrouter"/"基元律动"）
+				// 追加在模型右侧，切供应商后能直接从页脚确认当前走的是哪家。
+				const ccSwitchSupplier = model
+					? model.provider === "cc-switch-claude"
+						? providerNames.claude
+						: model.provider === "cc-switch-codex"
+							? providerNames.codex
+							: undefined
+					: undefined;
+				if (ccSwitchSupplier) {
+					rightSide = `${rightSide}${formatCcSwitchProviderName(ccSwitchSupplier)}`;
 				}
 
 				const rightSideWidth = visibleWidth(rightSide);
@@ -3268,6 +3286,9 @@ export default function (pi: ExtensionAPI) {
 	const { routingMode, hideRoutingStatus } = readCcSwitchProviderLocalConfig(localConfigPath);
 	const routingSnapshot = captureProviderRoutingSnapshot();
 	applyProviderRoutingDiagnostics(routingSnapshot);
+	// 供应商名称只存在 cc-switch 的 SQLite 数据库（providers.name），写出的 CLI 配置里没有。
+	// cc-switch 换 Provider 后需重启才生效，与 routingSnapshot 同语义，加载时读一次即可。
+	const providerNames = readCurrentCcSwitchProviderNames(join(homedir(), ".cc-switch", "cc-switch.db"));
 
 	const resolveClaudeConfig = routingMode === "live"
 		? () => loadClaudeConfig()
@@ -3295,9 +3316,9 @@ export default function (pi: ExtensionAPI) {
 				const displayModel = isCurrentClaudeModel(model) ? (claude.currentModel ?? "unknown") : model;
 				return {
 					id: model,
-					name: isCurrentClaudeModel(model)
+					name: `${isCurrentClaudeModel(model)
 						? `cc-switch Claude (current: ${displayModel})`
-						: `cc-switch Claude (${model})`,
+						: `cc-switch Claude (${model})`}${formatCcSwitchProviderName(providerNames.claude)}`,
 					reasoning: true,
 					// 仅 1M 上下文模型暴露 xhigh 档；其他模型让 pi UI 自动隐藏 xhigh。
 					thinkingLevelMap: supportsOneMillionContext(displayModel) ? { xhigh: "xhigh" } : undefined,
@@ -3333,9 +3354,9 @@ export default function (pi: ExtensionAPI) {
 				const contextWindow = clampCodexContextWindow(catalogModel?.contextWindow, codexContextWindow());
 				return {
 					id: model,
-					name: isCurrentCodexModel(model)
+					name: `${isCurrentCodexModel(model)
 						? `cc-switch Codex (current: ${displayModel})`
-						: `cc-switch Codex (${catalogModel?.name ?? model})`,
+						: `cc-switch Codex (${catalogModel?.name ?? model})`}${formatCcSwitchProviderName(providerNames.codex)}`,
 					reasoning: catalogModel?.reasoning ?? true,
 					input: codex.api === "cc-switch-codex-responses"
 						? (catalogModel?.input ?? TEXT_IMAGE_INPUT)
@@ -3361,10 +3382,10 @@ export default function (pi: ExtensionAPI) {
 		return [
 			routingModeStatusLine(routingMode),
 			effectiveClaude
-				? `Claude: current=${effectiveClaude.currentModel ?? "unknown"}; models=${effectiveClaude.models.map((model) => `cc-switch-claude/${model}`).join(", ")} -> ${effectiveClaude.baseUrl}`
+				? `Claude: current=${effectiveClaude.currentModel ?? "unknown"}${providerNames.claude ? `; supplier=${providerNames.claude}` : ""}; models=${effectiveClaude.models.map((model) => `cc-switch-claude/${model}`).join(", ")} -> ${effectiveClaude.baseUrl}`
 				: effectiveSnapshot.diagnostics.claude ?? "Claude: no configured settings provider found",
 			effectiveCodex
-				? `Codex: cc-switch-codex/${effectiveCodex.model} -> ${effectiveCodex.baseUrl}; catalog=${effectiveCodex.catalogStatus === "loaded" ? `cc-switch/${effectiveCodex.catalogModels.length}` : `fallback/${effectiveCodex.catalogStatus}`}`
+				? `Codex: cc-switch-codex/${effectiveCodex.model}${providerNames.codex ? `; supplier=${providerNames.codex}` : ""} -> ${effectiveCodex.baseUrl}; catalog=${effectiveCodex.catalogStatus === "loaded" ? `cc-switch/${effectiveCodex.catalogModels.length}` : `fallback/${effectiveCodex.catalogStatus}`}`
 				: effectiveSnapshot.diagnostics.codex ?? "Codex: no configured provider found",
 			effectiveCodex ? codexSummaryRouteStatus(effectiveCodex) : "Codex Summary: unavailable",
 			fcappKeepwarmStatusLine(),
@@ -3457,7 +3478,7 @@ export default function (pi: ExtensionAPI) {
 	});
 
 	pi.on("session_start", (_event, ctx) => {
-		installCcSwitchFooter(pi, ctx, routingMode, routingSnapshot.codex);
+		installCcSwitchFooter(pi, ctx, routingMode, routingSnapshot.codex, providerNames);
 		if (!hideRoutingStatus) {
 			ctx.ui.setStatus(CC_SWITCH_ROUTING_STATUS_KEY, routingModeFooterStatus(routingMode));
 		}
